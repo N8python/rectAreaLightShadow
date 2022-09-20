@@ -195,7 +195,7 @@ async function main() {
         rotationZ: 0,
         rotationY: 0,
         denoise: true,
-        blurSize: 0.5,
+        blurSize: 1,
         blurSharp: 3.5,
         lightColor: [1, 1, 1]
     };
