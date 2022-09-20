@@ -16,7 +16,8 @@ import { Stats } from "./stats.js";
 import { EffectCompositer } from "./EffectCompositer.js";
 import { GUI } from 'https://unpkg.com/three@0.144.0/examples/jsm/libs/lil-gui.module.min.js';
 import { OBJLoader } from 'https://unpkg.com/three@0.144.0/examples/jsm/loaders/OBJLoader.js';
-import * as BufferGeometryUtils from 'https://unpkg.com/three@0.144.0/examples/jsm//utils/BufferGeometryUtils.js';
+import * as BufferGeometryUtils from 'https://unpkg.com/three@0.144.0/examples/jsm/utils/BufferGeometryUtils.js';
+import { GLTFExporter } from "./GLTFExporter.js";
 async function main() {
     // Setup basic renderer, controls, and profiler
     const clientWidth = window.innerWidth * 0.99;
@@ -32,6 +33,7 @@ async function main() {
     renderer.shadowMap.type = THREE.VSMShadowMap;
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, 25, 0);
+    const gltfExporter = new GLTFExporter();
     const stats = new Stats();
     stats.showPanel(0);
     document.body.appendChild(stats.dom);
@@ -200,14 +202,46 @@ async function main() {
         lightColor: [1, 1, 1]
     };
     const gui = new GUI();
-    gui.add(effectController, "width", 0.1, 40, 0.001).name("Width");
-    gui.add(effectController, "height", 0.1, 40, 0.001).name("Height");
+    gui.add(effectController, "width", 0.1, 100, 0.001).name("Width");
+    gui.add(effectController, "height", 0.1, 80, 0.001).name("Height");
     gui.add(effectController, "blurSize", 0.0, 1.0, 0.001).name("Blur Size");
     gui.add(effectController, "rotationZ", 0.0, 2 * Math.PI, 0.001).name("Rotation Z");
     gui.add(effectController, "rotationY", 0.0, 2 * Math.PI, 0.001).name("Rotation Y");
     gui.add(effectController, "blurSharp", 0.0, 4.0, 0.001).name("Blur Sharp");
     gui.addColor(effectController, "lightColor").name("Light Color");
     gui.add(effectController, "denoise");
+    const link = document.createElement('a');
+    link.style.display = 'none';
+    document.body.appendChild(link);
+
+    function save(blob, filename) {
+
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+
+        // URL.revokeObjectURL( url ); breaks Firefox...
+
+    }
+
+    function saveString(text, filename) {
+
+        save(new Blob([text], { type: 'text/plain' }), filename);
+
+    }
+    /*document.onclick = (e) => {
+        gltfExporter.parse(scene, function(result) {
+
+            const output = JSON.stringify(result, null, 2);
+            saveString(output, 'scene.gltf');
+        }, {
+            trs: false,
+            onlyVisible: false,
+            truncateDrawRange: false,
+            binary: false,
+            maxTextureSize: 4096
+        })
+    }*/
 
     function animate() {
         /*scene.overrideMaterial = customMeshDepth;

@@ -150,7 +150,7 @@ const EffectShader = {
     seed += 1.0;
     return result;*/
     seed += 1.0;
-    return texture2D(blueNoise, vUv + 0.1 * seed ).x;
+    return texture2D(blueNoise, vUv + 0.01 * seed ).x;
     }
         float linearize_depth(float d,float zNear,float zFar)
         {
