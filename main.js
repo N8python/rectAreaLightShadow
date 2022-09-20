@@ -15,6 +15,8 @@ import { VerticalBlurShader } from "./VerticalBlurShader.js";
 import { Stats } from "./stats.js";
 import { EffectCompositer } from "./EffectCompositer.js";
 import { GUI } from 'https://unpkg.com/three@0.144.0/examples/jsm/libs/lil-gui.module.min.js';
+import { OBJLoader } from 'https://unpkg.com/three@0.144.0/examples/jsm/loaders/OBJLoader.js';
+import * as BufferGeometryUtils from 'https://unpkg.com/three@0.144.0/examples/jsm//utils/BufferGeometryUtils.js';
 async function main() {
     // Setup basic renderer, controls, and profiler
     const clientWidth = window.innerWidth * 0.99;
@@ -79,15 +81,19 @@ async function main() {
     box.position.x = -20;
     box.position.z = 0;
     scene.add(box);
-    const sphere = new THREE.Mesh(new THREE.SphereGeometry(6.25, 32, 32), new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, color: 0xffffff, roughness: 0, metalness: 0, dithering: true }));
-    sphere.position.y = 7.5;
+    const sphere = new THREE.Mesh(new THREE.TorusKnotGeometry(5, 1.5, 200, 32), new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, color: new THREE.Color(0.2, 0.8, 0.2), roughness: 0, metalness: 0, dithering: true }));
+    sphere.position.y = 10;
     sphere.position.x = 20;
     sphere.position.z = 0;
     sphere.castShadow = true;
     sphere.receiveShadow = true;
     scene.add(sphere);
-    const torusKnot = new THREE.Mesh(new THREE.TorusKnotGeometry(5, 1.5, 200, 32), new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, color: new THREE.Color(0.2, 0.8, 0.2), roughness: 0, metalness: 0, dithering: true }));
-    torusKnot.position.y = 10;
+    let buddhaGeo = (await new OBJLoader().loadAsync("https://raw.githubusercontent.com/alecjacobson/common-3d-test-models/master/data/happy.obj")).children[0].geometry.scale(100, 100, 100).translate(0, -6.3, 0).rotateY(Math.PI);
+    buddhaGeo.deleteAttribute('normal');
+    buddhaGeo = BufferGeometryUtils.mergeVertices(buddhaGeo);
+    buddhaGeo.computeVertexNormals();
+    const torusKnot = new THREE.Mesh(buddhaGeo /*new THREE.TorusKnotGeometry(5, 1.5, 200, 32)*/ , new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, color: new THREE.Color(1.0, 1.0, 1.0), roughness: 0, metalness: 0, dithering: true }));
+    //torusKnot.position.y = 10;
     torusKnot.position.x = 0;
     //torusKnot.position.z = 9;
     torusKnot.castShadow = true;
@@ -204,6 +210,7 @@ async function main() {
         scene.overrideMaterial = null;*/
         camHelp.visible = true;
         light.visible = true;
+        // torusKnot.rotation.x += 0.01;
         /*width = 50; //+ 25 * Math.sin(performance.now() / 1000);
         height = 50; // + 25 * Math.cos(performance.now() / 1000);
         rect.scale.x = width;
