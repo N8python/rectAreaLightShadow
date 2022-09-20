@@ -4,6 +4,7 @@ const HorizontalBlurShader = {
 
         'tDiffuse': { value: null },
         'sceneDepth': { value: null },
+        'blurSharp': { value: 0 },
         'near': { value: 0 },
         'far': { value: 0 },
         'h': { value: 1.0 / 512.0 }
@@ -20,6 +21,7 @@ const HorizontalBlurShader = {
     fragmentShader: /* glsl */ `
 		uniform sampler2D tDiffuse;
 		uniform sampler2D sceneDepth;
+		uniform float blurSharp;
 		uniform float h;
 		uniform float near;
 		uniform float far;
@@ -33,11 +35,13 @@ const HorizontalBlurShader = {
 			return (1.0 / (1.0 + 5.0 * abs(uvDepth - d)));
 		}
 		void main() {
-            float radius = h;
 			vec4 sum = vec4( 0.0 );
 			float[9] weights =  float[9](0.051, 0.0918, 0.12245, 0.1531, 0.1633, 0.1531, 0.12245, 0.0918, 0.051);
 			float weightSum = 0.0;
-			float uvDepth = linearize_depth(texture2D(sceneDepth, vUv).x, 0.1, 1000.0);
+			float d = texture2D(sceneDepth, vUv).x;
+			float b = texture2D(tDiffuse, vUv).x;
+			float uvDepth = linearize_depth(d, 0.1, 1000.0);
+			float radius = h * (1.0 - d) * (-blurSharp * pow(b - 0.5, 2.0) + 1.0);
 			for(float i = -4.0; i <= 4.0; i++) {
 				vec2 sampleUv = vec2( vUv.x + i * radius, vUv.y );
 				float w = weights[int(i + 4.0)] * depthFalloff(sampleUv, uvDepth);

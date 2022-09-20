@@ -4,6 +4,7 @@ const VerticalBlurShader = {
 
         'tDiffuse': { value: null },
         'sceneDepth': { value: null },
+        'blurSharp': { value: 0 },
         'near': { value: 0 },
         'far': { value: 0 },
         'v': { value: 1.0 / 512.0 }
@@ -22,6 +23,7 @@ const VerticalBlurShader = {
 		uniform sampler2D sceneDepth;
 		uniform float v;
 		uniform float near;
+		uniform float blurSharp;
 		uniform float far;
 		varying vec2 vUv;
 		float linearize_depth(float d,float zNear,float zFar)
@@ -33,11 +35,13 @@ const VerticalBlurShader = {
 			return (1.0 / (1.0 + 5.0 * abs(uvDepth - d)));
 		}
 		void main() {
-            float radius = v;
 			vec4 sum = vec4( 0.0 );
 			float[9] weights =  float[9](0.051, 0.0918, 0.12245, 0.1531, 0.1633, 0.1531, 0.12245, 0.0918, 0.051);
 			float weightSum = 0.0;
-			float uvDepth = linearize_depth(texture2D(sceneDepth, vUv).x, 0.1, 1000.0);
+			float d = texture2D(sceneDepth, vUv).x;
+			float b = texture2D(tDiffuse, vUv).x;
+			float uvDepth = linearize_depth(d, 0.1, 1000.0);
+			float radius = v * (1.0 - d) * (-blurSharp * pow(b - 0.5, 2.0) + 1.0);
 			for(float i = -4.0; i <= 4.0; i++) {
 				vec2 sampleUv = vec2( vUv.x, vUv.y + i * radius );
 				float w = weights[int(i + 4.0)] * depthFalloff(sampleUv, uvDepth);

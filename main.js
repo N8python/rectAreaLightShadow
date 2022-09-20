@@ -168,8 +168,10 @@ async function main() {
     const hblur = new ShaderPass(HorizontalBlurShader);
     const vblur = new ShaderPass(VerticalBlurShader);
     const blurSize = 1.0;
-    hblur.uniforms.h.value = blurSize / (clientWidth);
-    vblur.uniforms.v.value = blurSize / (clientHeight);
+    hblur.uniforms.h.value = blurSize * (clientHeight / clientWidth);
+    vblur.uniforms.v.value = blurSize;
+    console.log(hblur.uniforms.h.value);
+    console.log(vblur.uniforms.v.value);
     const composer = new EffectComposer(renderer);
     const smaaPass = new SMAAPass(clientWidth, clientHeight);
     const effectPass = new ShaderPass(EffectShader);
@@ -193,13 +195,17 @@ async function main() {
         rotationZ: 0,
         rotationY: 0,
         denoise: true,
+        blurSize: 0.5,
+        blurSharp: 3.5,
         lightColor: [1, 1, 1]
     };
     const gui = new GUI();
     gui.add(effectController, "width", 0.1, 40, 0.001).name("Width");
     gui.add(effectController, "height", 0.1, 40, 0.001).name("Height");
+    gui.add(effectController, "blurSize", 0.0, 1.0, 0.001).name("Blur Size");
     gui.add(effectController, "rotationZ", 0.0, 2 * Math.PI, 0.001).name("Rotation Z");
     gui.add(effectController, "rotationY", 0.0, 2 * Math.PI, 0.001).name("Rotation Y");
+    gui.add(effectController, "blurSharp", 0.0, 4.0, 0.001).name("Blur Sharp");
     gui.addColor(effectController, "lightColor").name("Light Color");
     gui.add(effectController, "denoise");
 
@@ -236,6 +242,9 @@ async function main() {
         renderer.setRenderTarget(depthTarget);
         renderer.clear();
         renderer.render(scene, cam);
+        const blurSize = effectController.blurSize;
+        hblur.uniforms.h.value = blurSize * (clientHeight / clientWidth);
+        vblur.uniforms.v.value = blurSize;
         // light.position.y = 25 + 10 * Math.sin(performance.now() / 10000);
         //torusKnot.rotation.x += 0.01;
         // torusKnot.rotation.y += 0.01;
@@ -270,6 +279,8 @@ async function main() {
         hblur.uniforms["near"].value = cam.near;
         hblur.uniforms["far"].value = cam.far;
         vblur.uniforms["near"].value = cam.near;
+        hblur.uniforms["blurSharp"].value = effectController.blurSharp;
+        vblur.uniforms["blurSharp"].value = effectController.blurSharp;
         vblur.uniforms["far"].value = cam.far;
         vblur.uniforms["sceneDepth"].value = defaultTexture.depthTexture;
         // testMarker.position.copy(new THREE.Vector3(0.0, 0.0, 0.0).applyMatrix4(arealightHelper.matrixWorld));
