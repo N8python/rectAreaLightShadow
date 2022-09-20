@@ -196,7 +196,7 @@ async function main() {
         rotationY: 0,
         denoise: true,
         blurSize: 1,
-        blurSharp: 3.5,
+        blurSharp: 2,
         lightColor: [1, 1, 1]
     };
     const gui = new GUI();
